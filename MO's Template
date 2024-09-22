@@ -1,0 +1,56 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+const int MAXN = 100000;
+const int BLOCK_SIZE = 316; // sqrt(MAXN)
+
+struct Query {
+    int L, R, idx;
+    bool operator<(const Query& other) const {
+        if (L / BLOCK_SIZE != other.L / BLOCK_SIZE)
+            return L / BLOCK_SIZE < other.L / BLOCK_SIZE;
+        return R < other.R;
+    }
+};
+
+int arr[MAXN];
+int freq[MAXN];
+int answer[MAXN];
+int current_answer = 0;
+
+void add(int pos) {
+    // Add element at pos to the current segment
+    current_answer += arr[pos];
+}
+
+void remove(int pos) {
+    // Remove element at pos from the current segment
+    current_answer -= arr[pos];
+}
+
+int main() {
+    int n, q;
+    cin >> n >> q;
+    for (int i = 0; i < n; ++i) cin >> arr[i];
+
+    vector<Query> queries(q);
+    for (int i = 0; i < q; ++i) {
+        cin >> queries[i].L >> queries[i].R;
+        queries[i].idx = i;
+    }
+
+    sort(queries.begin(), queries.end());
+
+    int currentL = 0, currentR = -1;
+    for (const auto& query : queries) {
+        while (currentR < query.R) add(++currentR);
+        while (currentR > query.R) remove(currentR--);
+        while (currentL < query.L) remove(currentL++);
+        while (currentL > query.L) add(--currentL);
+        answer[query.idx] = current_answer;
+    }
+
+    for (int i = 0; i < q; ++i) cout << answer[i] << endl;
+
+    return 0;
+}
